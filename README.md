@@ -1,3 +1,15 @@
+# Note: This is a fork for PHP 5.5
+
+As [spatie/laravel-activitylog](https://github.com/spatie/laravel-activitylog) only support php 7 and up, this repository is a fork _supposedly maintained_ for php version 5.5.
+
+The required package `spatie/string` only support php 5.6 or above, so removed it from composer.json, and replace by myself implementation.
+
+Testing can also be passed.
+
+The rest of the contents here are all identical to `spatie/laravel-activitylog`.
+
+---
+
 # Log activity inside your Laravel app
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/spatie/laravel-activitylog.svg?style=flat-square)](https://packagist.org/packages/spatie/laravel-activitylog)
