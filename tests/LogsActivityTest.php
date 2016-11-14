@@ -15,12 +15,12 @@ class LogsActivityTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-
-        $this->article = new class() extends Article {
-            use LogsActivity;
-
-            use SoftDeletes;
-        };
+//
+//        $this->article = new class() extends Article {
+//            use LogsActivity;
+//
+//            use SoftDeletes;
+//        };
 
         $this->assertCount(0, Activity::all());
     }
@@ -31,7 +31,7 @@ class LogsActivityTest extends TestCase
         $article = $this->createArticle();
         $this->assertCount(1, Activity::all());
 
-        $this->assertInstanceOf(get_class($this->article), $this->getLastActivity()->subject);
+        $this->assertInstanceOf(get_class($article), $this->getLastActivity()->subject);
         $this->assertEquals($article->id, $this->getLastActivity()->subject->id);
         $this->assertEquals('created', $this->getLastActivity()->description);
     }
@@ -46,7 +46,7 @@ class LogsActivityTest extends TestCase
 
         $this->assertCount(2, Activity::all());
 
-        $this->assertInstanceOf(get_class($this->article), $this->getLastActivity()->subject);
+        $this->assertInstanceOf(get_class($article), $this->getLastActivity()->subject);
         $this->assertEquals($article->id, $this->getLastActivity()->subject->id);
         $this->assertEquals('updated', $this->getLastActivity()->description);
     }
@@ -54,11 +54,11 @@ class LogsActivityTest extends TestCase
     /** @test */
     public function it_will_log_the_deletion_of_a_model_without_softdeletes()
     {
-        $articleClass = new class() extends Article {
-            use LogsActivity;
-        };
+//        $articleClass = new class() extends Article {
+//            use LogsActivity;
+//        };
 
-        $article = new $articleClass();
+        $article = new TempArticleB();
 
         $article->save();
 
@@ -78,7 +78,7 @@ class LogsActivityTest extends TestCase
 
         $this->assertCount(2, Activity::all());
 
-        $this->assertEquals(get_class($this->article), $this->getLastActivity()->subject_type);
+        $this->assertEquals(get_class($article), $this->getLastActivity()->subject_type);
         $this->assertEquals($article->id, $this->getLastActivity()->subject_id);
         $this->assertEquals('deleted', $this->getLastActivity()->description);
     }
@@ -94,7 +94,7 @@ class LogsActivityTest extends TestCase
 
         $this->assertCount(3, Activity::all());
 
-        $this->assertEquals(get_class($this->article), $this->getLastActivity()->subject_type);
+        $this->assertEquals(get_class($article), $this->getLastActivity()->subject_type);
         $this->assertEquals($article->id, $this->getLastActivity()->subject_id);
         $this->assertEquals('restored', $this->getLastActivity()->description);
     }
@@ -128,7 +128,7 @@ class LogsActivityTest extends TestCase
 
         $this->assertCount(3, $activities);
 
-        $this->assertEquals(get_class($this->article), $this->getLastActivity()->subject_type);
+        $this->assertEquals(get_class($article), $this->getLastActivity()->subject_type);
         $this->assertEquals($article->id, $this->getLastActivity()->subject_id);
         $this->assertEquals('deleted', $this->getLastActivity()->description);
         $this->assertEquals('changed name', $this->getLastActivity()->subject->name);
@@ -137,16 +137,16 @@ class LogsActivityTest extends TestCase
     /** @test */
     public function it_can_log_activity_to_log_named_in_the_model()
     {
-        $articleClass = new class() extends Article {
-            use LogsActivity;
+//        $articleClass = new class() extends Article {
+//            use LogsActivity;
+//
+//            public function getLogNameToUse()
+//            {
+//                return 'custom_log';
+//            }
+//        };
 
-            public function getLogNameToUse()
-            {
-                return 'custom_log';
-            }
-        };
-
-        $article = new $articleClass();
+        $article = new TempArticleD();
         $article->name = 'my name';
         $article->save();
 
@@ -157,13 +157,13 @@ class LogsActivityTest extends TestCase
     /** @test */
     public function it_will_not_log_an_update_of_the_model_if_only_ignored_attributes_are_changed()
     {
-        $articleClass = new class() extends Article {
-            use LogsActivity;
+//        $articleClass = new class() extends Article {
+//            use LogsActivity;
+//
+//            protected static $ignoreChangedAttributes = ['text'];
+//        };
 
-            protected static $ignoreChangedAttributes = ['text'];
-        };
-
-        $article = new $articleClass();
+        $article = new TempArticleE();
         $article->name = 'my name';
         $article->save();
 
@@ -172,17 +172,41 @@ class LogsActivityTest extends TestCase
 
         $this->assertCount(1, Activity::all());
 
-        $this->assertInstanceOf(get_class($articleClass), $this->getLastActivity()->subject);
+        $this->assertInstanceOf(get_class($article), $this->getLastActivity()->subject);
         $this->assertEquals($article->id, $this->getLastActivity()->subject->id);
         $this->assertEquals('created', $this->getLastActivity()->description);
     }
 
-    protected function createArticle(): Article
+    /**
+     * @return \Spatie\Activitylog\Test\Models\Article
+     */
+    protected function createArticle()
     {
-        $article = new $this->article();
+        $article = new TempArticleC();
         $article->name = 'my name';
         $article->save();
 
         return $article;
     }
 }
+
+class TempArticleC extends Article {
+    use LogsActivity;
+
+    use SoftDeletes;
+};
+
+class TempArticleD extends Article {
+    use LogsActivity;
+
+    public function getLogNameToUse()
+    {
+        return 'custom_log';
+    }
+};
+
+class TempArticleE extends Article {
+    use LogsActivity;
+
+    protected static $ignoreChangedAttributes = ['text'];
+};

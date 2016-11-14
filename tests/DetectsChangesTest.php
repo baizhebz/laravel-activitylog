@@ -15,12 +15,6 @@ class DetectsChangesTest extends TestCase
     {
         parent::setUp();
 
-        $this->article = new class() extends Article {
-            static $logAttributes = ['name', 'text'];
-
-            use LogsActivity;
-        };
-
         $this->assertCount(0, Activity::all());
     }
 
@@ -65,13 +59,7 @@ class DetectsChangesTest extends TestCase
     /** @test */
     public function it_will_store_no_changes_when_not_logging_attributes()
     {
-        $articleClass = new class() extends Article {
-            static $logAttributes = [];
-
-            use LogsActivity;
-        };
-
-        $article = new $articleClass();
+        $article = new TempArticleB();
 
         $article->name = 'updated name';
 
@@ -97,12 +85,27 @@ class DetectsChangesTest extends TestCase
         $this->assertEquals($expectedChanges, $this->getLastActivity()->changes);
     }
 
-    protected function createArticle(): Article
+    /**
+     * @return \Spatie\Activitylog\Test\Models\Article
+     */
+    protected function createArticle()
     {
-        $article = new $this->article();
+        $article = new TempArticleA();
         $article->name = 'my name';
         $article->save();
 
         return $article;
     }
 }
+
+class TempArticleA extends Article {
+    static $logAttributes = ['name', 'text'];
+
+    use LogsActivity;
+};
+
+class TempArticleB extends Article {
+    static $logAttributes = [];
+
+    use LogsActivity;
+};
